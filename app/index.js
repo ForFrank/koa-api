@@ -1,9 +1,27 @@
 const Koa = require('koa');
-const bodyparser = require('koa-bodyparser');
+const koaBody = require('koa-body');
+const error = require('koa-json-error');
+const parameter = require('koa-parameter');
+const mongoose = require('mongoose')
+const path = require('path');
 const app = new Koa();
 const routing = require('./routes');
+const { connectionStr } = require('./config');
 
-app.use(bodyparser());
+mongoose.connect(connectionStr, { useUnifiedTopology: true }, { useNewUrlParser: true }, () => console.log('MongoDB连接成功了！'));
+mongoose.connection.on('error', console.error);
+
+app.use(error({
+    postFormat: (e, { stack, ...rest }) => process.env.NODE_ENV === 'production' ? rest : { stack, ...rest }
+}));
+app.use(koaBody({
+    multipart: true,
+    formLimit: {
+        uploadDir: path.join(__dirname, './public/uploads'),
+        keepExtensions: true,
+    },
+}));
+app.use(parameter(app));
 routing(app);
 
-app.listen(3000, ()=>console.log('程序启动在3000端口了'));
+app.listen(3000, () => console.log('程序启动在3000端口了'));

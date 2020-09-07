@@ -1,24 +1,21 @@
-const Router =require('koa-router');
+const jwt = require('koa-jwt')
+const Router = require('koa-router');
 const { prefix } = require('./home');
-const router =new Router({prefix: '/users'});
-const db=[{name:"李雷"}];
+const router = new Router({ prefix: '/users' });
+const { find, findById, create, update, delete: del, login, checkOwner } = require('../controllers/users')
+const { secret } = require('../config')
 
-router.get('/', (ctx)=>{
-    ctx.body=db;
-});
+const auth = jwt({ secret });
+router.get('/', find);
 
-router.post('/', (ctx)=>{
-    db.push(ctx.request.body);
-    ctx.body=ctx.request.body;
-});
+router.post('/', create);
 
-router.get('/:id', (ctx)=>{
-    ctx.body=db;[ctx.params.id*1];
-});
+router.get('/:id', findById);
 
-router.delete('/:id', (ctx)=>{
-    cdb.splice(ctx.params.id*1,1);
-    ctx.status=204;
-});
+router.patch('/:id', auth, checkOwner, update)
 
-module.exports=router;
+router.delete('/:id', auth, checkOwner, del);
+
+router.post('/login', login);
+
+module.exports = router;
