@@ -19,8 +19,14 @@ app.use(error({
 app.use(koaBody({
     multipart: true,
     formidable: {
-        uploadDir: path.join(__dirname, './public/uploads'),
+        // uploadDir: path.join(__dirname, './public/uploads'),
         keepExtensions: true,
+        onFileBegin:(name,file) => { // 文件上传前的设置
+            // console.log(`name: ${name}`);
+            // console.log(file);
+            const dir= path.join(__dirname, './public/uploads/');
+            file.path=`${dir}${file.name}`;
+          },
     },
 }));
 app.use(parameter(app));
